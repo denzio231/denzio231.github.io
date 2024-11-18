@@ -1,4 +1,4 @@
-Thanks to encukou for the bresenham line function: https://github.com/encukou/bresenham
+Thanks to encukou for the bresenham line function used in the antiderivative sketcher: https://github.com/encukou/bresenham
 
 Below is the licensing for said function
 
