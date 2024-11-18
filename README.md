@@ -1,6 +1,6 @@
 Thanks to encukou for the bresenham line function: https://github.com/encukou/bresenham
 
-Below is the copyright for said function
+Below is the licensing for said function
 
 _________________________________________
 
