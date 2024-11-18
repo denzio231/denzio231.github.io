@@ -2,6 +2,8 @@ Thanks to encukou for the bresenham line function: https://github.com/encukou/br
 
 Below is the copyright for said function
 
+_________________________________________
+
 Copyright © 2016 Petr Viktorin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
