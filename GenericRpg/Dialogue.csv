@@ -1,0 +1,13 @@
+﻿key,SpeakingCharacter,Line,Options,Special Actions
+onDisturb,Angry Person,Please fuck off,,
+,Me,Nah bro dis is my spot,,
+,Angry Person,Grrrr,,
+Death,Me,No fucking way I actually died to this guy,,
+,Me,Welp ggs,,
+Shop,Fisherman,"Hello there mate, ya here to buy or sell?","Buy,Sell,Nvm",
+,,Excited to see what you've got!,Sell,USEOP
+,,I got quite a stock today!,Buy,USEOP
+,,welp come back next time,Nvm,USEOP
+,,,,RETURN
+Test,Me,Hello this is definitely a dialogue system,,
+,Me,Nothing to see here,,
