@@ -10,8 +10,12 @@ var tX = 0;
 var tY = 0;
 var last_e;
 var ts = 0;
+const h = 10**(-5);
 var holding = false;
 var funcDict = new Map();
+function Derivative(func,x){
+    return (func.evaluate({x:x+h})-func.evaluate({x:x}))/h;
+}
 function renderAxes(){
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = `rgb(0,0,0)`
@@ -70,6 +74,7 @@ function renderFunction(){
         ctx.strokeStyle = `rgb(255,0,0)`
         var initialY = func.evaluate({x:-originX/scale});
         var sign = Math.sign(initialY);
+        var secSign = Math.sign((Derivative(func,-originX/scale+h)-Derivative(func,-originX/scale))/h);
         ctx.moveTo(0,originY-initialY*scale);
         if(sign == 0){
             roots.push(-originX/scale);
@@ -81,6 +86,20 @@ function renderFunction(){
             funcX = x-originX;
             var fX = funcX/scale;
             funcY = func.evaluate({x:fX});
+            let D = Derivative(func,fX);
+            let Dh = Derivative(func,fX+h);
+            let secD = (Dh-D)/h;
+            let secSignNow = Math.sign(secD);
+            let flag = (secSign!=secSignNow);
+            secSign = secSignNow;
+            if(flag && Math.abs(secD) > 10**3){
+                console.log(secD)
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x,originY-funcY*(scale));
+                sign = Math.sign(funcY);
+                continue;
+            }
             for (const [k, cloneFunc] of cloneDict.entries()) {
                 nextY = func.evaluate({x:(funcX+1)/scale});
                 cloneY = cloneFunc.evaluate({x:(fX)});
