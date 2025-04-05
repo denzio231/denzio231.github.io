@@ -13,6 +13,7 @@ var ts = 0;
 var holding = false;
 var funcDict = new Map();
 function renderAxes(){
+    ctx.lineWidth = 3.5;
     ctx.strokeStyle = `rgb(0,0,0)`
     originX = c.width/2+offsetX;
     originY = c.height/2+offsetY;
@@ -25,25 +26,46 @@ function renderAxes(){
     ctx.lineTo(c.width,originY);
     ctx.stroke();
 }
-function renderFunction(zoomEvent){
+function floorToNearest(n,x){
+    return Math.floor(n/x)*x;
+}
+function ceilToNearest(n,x){
+    return Math.ceil(n/x)*x;
+}
+function renderGrid(){
+    ctx.font = "24px serif";
+    var gap = ceilToNearest(100/scale,1);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = `rgb(82, 82, 82)`
     originX = c.width/2+offsetX;
     originY = c.height/2+offsetY;
-    if(zoomEvent){
-        mouseX = translateX(zoomEvent.x);
-        mouseY = translateY(zoomEvent.y);
-        newOriginX = zoomEvent.x-temp_scale*mouseX;
-        newOriginY = zoomEvent.y+temp_scale*mouseY;
-        offsetX = newOriginX-c.width/2;
-        offsetY = newOriginY-c.height/2;
-        scale = temp_scale;
+    for(let x = floorToNearest(translateX(0),gap);x<=floorToNearest(translateX(c.width),gap);x+=gap){
+        ctx.beginPath();
+        ctx.moveTo(x*scale+originX,0);
+        ctx.lineTo(x*scale+originX,c.height);
+        ctx.fillStyle = "black";
+        ctx.fillText(x, x*scale+originX, originY-10);
+        ctx.stroke();
     }
+    for(let y = floorToNearest(translateY(c.height),gap);y<=floorToNearest(translateY(0),gap);y+=gap){
+        ctx.beginPath();
+        ctx.moveTo(0,originY-y*scale);
+        ctx.lineTo(c.width,originY-y*scale);
+        if(y!=0){
+            ctx.fillStyle = "black";
+            ctx.fillText(y, originX, originY-y*scale);
+        }
+        ctx.stroke();
+    }
+}
+function renderFunction(){
     originX = c.width/2+offsetX;
     originY = c.height/2+offsetY;
     var cloneDict = new Map(funcDict);
+    let roots = [];
+    let intercepts = [];
     for (const [key, func] of funcDict.entries()) {
-        cloneDict.delete(key)
-        let roots = [];
-        let intercepts = [];
+        cloneDict.delete(key);
         ctx.beginPath();
         ctx.strokeStyle = `rgb(255,0,0)`
         var initialY = func.evaluate({x:-originX/scale});
@@ -54,6 +76,7 @@ function renderFunction(zoomEvent){
         }
         let lastX = -originX/scale;
         let lastY = initialY;
+        ctx.lineWidth = 3;
         for (let x=1;x<=c.width;x++){
             funcX = x-originX;
             var fX = funcX/scale;
@@ -88,20 +111,22 @@ function renderFunction(zoomEvent){
             ctx.lineTo(x,originY-funcY*(scale));
         }
         ctx.stroke();
-        for(let i = 0;i<roots.length;i++){
-            ctx.beginPath();
-            ctx.arc(roots[i]*scale+originX, originY, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "red";
-            ctx.fill();
-            ctx.stroke();
-        }
-        for(let i = 0;i<intercepts.length;i++){
-            ctx.beginPath();
-            ctx.arc(intercepts[i][0]*scale+originX, originY-intercepts[i][1]*scale, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "green";
-            ctx.fill();
-            ctx.stroke();
-        }
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "black"
+    }
+    for(let i = 0;i<roots.length;i++){
+        ctx.beginPath();
+        ctx.arc(roots[i]*scale+originX, originY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.stroke();
+    }
+    for(let i = 0;i<intercepts.length;i++){
+        ctx.beginPath();
+        ctx.arc(intercepts[i][0]*scale+originX, originY-intercepts[i][1]*scale, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "green";
+        ctx.fill();
+        ctx.stroke();
     }
 }
 function translateX(x){
@@ -112,13 +137,28 @@ function translateY(y){
     originY = c.height/2+offsetY;
     return (originY-y)/scale;
 }
+function adjustOffset(zoomEvent){
+    originX = c.width/2+offsetX;
+    originY = c.height/2+offsetY;
+    if(zoomEvent){
+        mouseX = translateX(zoomEvent.x);
+        mouseY = translateY(zoomEvent.y);
+        newOriginX = zoomEvent.x-temp_scale*mouseX;
+        newOriginY = zoomEvent.y+temp_scale*mouseY;
+        offsetX = newOriginX-c.width/2;
+        offsetY = newOriginY-c.height/2;
+        scale = temp_scale;
+    }
+}
 function render(zoomEvent){
     ctx.clearRect(0, 0, c.width, c.height);
+    adjustOffset(zoomEvent)
+    renderAxes();
+    renderGrid();
     try{
-        renderFunction(zoomEvent);
+        renderFunction();
     }
     catch(SyntaxError){}
-    renderAxes();
 }
 
 function resizeCanvas(){
@@ -145,7 +185,7 @@ c.addEventListener('mousemove', function(e) {
     }
 })
 c.addEventListener("wheel",function(e){
-    temp_scale = scale*((1.001)**(-e.deltaY));
+    temp_scale = scale*((1.0005)**(-e.deltaY));
     render(e);
 })
 function inputBoxWrapper(box){
@@ -173,7 +213,7 @@ function createMathInput(){
         }
     }
     inputBox.addEventListener("input",inputBoxWrapper(inputBox));
-    
+    inputBox.focus();
 }
 createMathInput();
 resizeCanvas();
