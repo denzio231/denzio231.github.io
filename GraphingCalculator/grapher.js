@@ -62,6 +62,7 @@ function renderGrid(){
         ctx.stroke();
     }
 }
+const interceptAccuracy = 1000;
 function renderFunction(){
     originX = c.width/2+offsetX;
     originY = c.height/2+offsetY;
@@ -212,11 +213,15 @@ function inputBoxWrapper(box){
         expression = box.value;
         try{
             let func = math.compile(expression);
-            funcDict.set(box,func);
+            if(typeof(func.evaluate({x:0}))!="number"){
+                funcDict.delete(box);
+            }
+            else{
+                funcDict.set(box,func);
+            }
         }
         catch(SyntaxError){
-            funcDict.set(box,null);
-            return;
+            funcDict.delete(box);
         }
         render();
     }
