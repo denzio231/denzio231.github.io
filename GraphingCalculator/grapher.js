@@ -13,6 +13,7 @@ var ts = 0;
 const h = 10**(-5);
 var holding = false;
 var funcDict = new Map();
+var colorDict = new Map();
 function Derivative(func,x){
     return (func.evaluate({x:x+h})-func.evaluate({x:x}))/h;
 }
@@ -72,7 +73,7 @@ function renderFunction(){
     for (const [key, func] of funcDict.entries()) {
         cloneDict.delete(key);
         ctx.beginPath();
-        ctx.strokeStyle = `rgb(255,0,0)`
+        ctx.strokeStyle = colorDict.get(key);
         var initialY = func.evaluate({x:-originX/scale});
         var sign = Math.sign(initialY);
         var secSign = Math.sign((Derivative(func,-originX/scale+h)-Derivative(func,-originX/scale))/h);
@@ -214,29 +215,44 @@ function inputBoxWrapper(box){
         try{
             let func = math.compile(expression);
             if(typeof(func.evaluate({x:0}))!="number"){
-                funcDict.delete(box);
+                funcDict.delete(box.parentElement);
             }
             else{
-                funcDict.set(box,func);
+                funcDict.set(box.parentElement,func);
             }
         }
         catch(SyntaxError){
-            funcDict.delete(box);
+            funcDict.delete(box.parentElement);
         }
         render();
     }
 }
+function colorBoxWrapper(colorBox){
+    return function(){
+        let color= colorBox.value;
+        colorDict.set(colorBox.parentElement,color)
+        render();
+    }
+}
 function createMathInput(){
+    var mainDiv = document.createElement("div");
+    var colorInput = document.createElement("input");
     var inputBox = document.createElement("input");
     inputBox.type = "text";
+    colorInput.type = "color";
+    mathInputContainer.appendChild(mainDiv)
     inputBox.className = "mathInput";
-    mathInputContainer.appendChild(inputBox);
+    mainDiv.appendChild(inputBox);
+    mainDiv.appendChild(colorInput)
     inputBox.onkeydown =  function(e){
         if(e.code == 'Enter'){
             createMathInput();
         }
     }
+    let colorFunc = colorBoxWrapper(colorInput);
     inputBox.addEventListener("input",inputBoxWrapper(inputBox));
+    colorInput.addEventListener("change", colorFunc, false);
+    colorFunc();
     inputBox.focus();
 }
 createMathInput();
